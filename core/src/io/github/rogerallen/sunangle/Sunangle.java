@@ -60,8 +60,8 @@
             compassTex = new Texture("compass.png");
 
             //create and compile shaders
-            vertexShader = Gdx.files.internal("vertexShader.glsl").readString();
-            fragmentShader = Gdx.files.internal("fragmentShader.glsl").readString();
+            vertexShader = Gdx.files.internal("vs_pct.glsl").readString();
+            fragmentShader = Gdx.files.internal("fs_ct.glsl").readString();
             shaderProgram = new ShaderProgram( vertexShader, fragmentShader );
 
             //get shader code variable pointers
@@ -83,6 +83,7 @@
             camController = new CameraInputController(cam);
             Gdx.input.setInputProcessor(camController);
 
+            Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         }
 
         @Override
@@ -90,6 +91,8 @@
             Gdx.gl.glViewport( 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight() );
             Gdx.gl.glClear( GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT );
 
+            Gdx.gl.glEnable(GL20.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
             shaderProgram.begin(); //Gdx.gl.glUseProgram( shadProgram );
 
             shaderProgram.setUniformMatrix( u_projViewTrans, cam.combined );
@@ -98,6 +101,7 @@
 
             Gdx.gl.glEnable( Gdx.gl.GL_DEPTH_TEST );
 
+            Gdx.gl20.glEnable(GL20.GL_TEXTURE_2D);
             Gdx.gl20.glActiveTexture(GL20.GL_TEXTURE0);
             compassTex.bind();
 
@@ -105,6 +109,9 @@
             Gdx.gl.glDrawArrays( Gdx.gl.GL_TRIANGLE_STRIP, 0, vertexBufferObject.getNumVertices() );
 
             shaderProgram.end();
+            Gdx.gl.glDisable(GL20.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL20.GL_ONE, GL20.GL_ZERO);
+            Gdx.gl20.glDisable(GL20.GL_TEXTURE_2D);
 
             handleKeyboard();
         }
