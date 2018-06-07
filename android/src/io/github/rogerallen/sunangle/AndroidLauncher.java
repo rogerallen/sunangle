@@ -11,6 +11,12 @@ public class AndroidLauncher extends AndroidApplication {
 	protected void onCreate (Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
+		config.depth = 24;
+		config.stencil = 8;
+		config.a = 8;
+		config.r = 8;
+		config.g = 8;
+		config.b = 8;
 		initialize(new Sunangle(), config);
 	}
 }
