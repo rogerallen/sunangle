@@ -10,7 +10,7 @@
 
     public class Sunangle extends ApplicationAdapter {
 
-        private Drawable compassPlane, clockPlane;
+        private Drawable compassPlane, clockPlane, compassBackPlane, clockBackPlane;
         private PerspectiveCamera cam;
 
         @Override
@@ -26,8 +26,27 @@
                              10f, 0f,  10f,   1f, 1f, 0f, 1f,   0f, 0f
                     });
 
+            compassBackPlane = new Drawable(
+                    "vs_pct.glsl","fs_ct.glsl","compass_back.png",
+                    new float[] {
+                            // (x, y, z),     (r, g, b, a),     (s, t),
+                            -10f, 0f, -10f,   0f, 0f, 0f, 1f,   0f, 1f,
+                             10f, 0f, -10f,   1f, 0f, 0f, 1f,   1f, 1f,
+                            -10f, 0f,  10f,   0f, 1f, 0f, 1f,   0f, 0f,
+                             10f, 0f,  10f,   1f, 1f, 0f, 1f,   1f, 0f
+                    });
+
             clockPlane = new Drawable(
                     "vs_pct.glsl","fs_ct.glsl","clock.png",
+                    new float[] {
+                            // (x, y, z),     (r, g, b, a),     (s, t),
+                            -10f, -10f,  0f,   0f, 0f, 0f, 1f,   0f, 1f,
+                             10f, -10f,  0f,   1f, 0f, 0f, 1f,   1f, 1f,
+                            -10f,  10f,  0f,   0f, 0f, 1f, 1f,   0f, 0f,
+                             10f,  10f,  0f,   1f, 0f, 1f, 1f,   1f, 0f
+                    });
+            clockBackPlane = new Drawable(
+                    "vs_pct.glsl","fs_ct.glsl","clock_back.png",
                     new float[] {
                             // (x, y, z),     (r, g, b, a),     (s, t),
                             -10f, -10f,  0f,   0f, 0f, 0f, 1f,   1f, 1f,
@@ -47,8 +66,9 @@
             CameraInputController camController = new CameraInputController(cam);
             Gdx.input.setInputProcessor(camController);
 
-            Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-            Gdx.gl.glEnable( Gdx.gl.GL_DEPTH_TEST );
+            Gdx.gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
+            Gdx.gl.glEnable(GL20.GL_CULL_FACE);
         }
 
         @Override
@@ -58,11 +78,20 @@
 
             Gdx.gl.glEnable(GL20.GL_BLEND);
             Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-            //Gdx.gl.glDepthFunc(GL20.GL_LEQUAL); TODO figure out 2-pass way to render clockPlane
+            Gdx.gl.glDepthFunc(GL20.GL_LEQUAL);
+            Gdx.gl.glCullFace(GL20.GL_BACK);
             compassPlane.render(cam.combined);
             clockPlane.render(cam.combined);
-            //Gdx.gl.glDepthFunc(GL20.GL_GREATER);
-            //clockPlane.render(cam.combined);
+            compassBackPlane.render(cam.combined);
+            clockBackPlane.render(cam.combined);
+            // draw when the depth test fails and ...
+            Gdx.gl.glDepthFunc(GL20.GL_GREATER);
+            // use the compassPlane alpha=1 in the FB to enable only that region
+            // this will require clearcolor=0,0,0
+            Gdx.gl.glBlendFunc(GL20.GL_ONE_MINUS_DST_ALPHA, GL20.GL_DST_ALPHA);
+            clockPlane.render(cam.combined);
+            clockBackPlane.render(cam.combined);
+            compassBackPlane.render(cam.combined);
             Gdx.gl.glDisable(GL20.GL_BLEND);
             Gdx.gl.glBlendFunc(GL20.GL_ONE, GL20.GL_ZERO);
 
