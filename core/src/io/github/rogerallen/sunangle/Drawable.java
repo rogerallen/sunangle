@@ -11,7 +11,7 @@ import com.badlogic.gdx.math.Matrix4;
 
 class Drawable {
     // Things about the object to render
-    private Matrix4 worldTrans;
+    public Matrix4 worldTrans;
     private VertexBufferObject vertexBufferObject;
     private ShaderProgram shaderProgram;
     private int u_projViewTrans;
