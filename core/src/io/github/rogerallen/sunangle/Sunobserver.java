@@ -1,5 +1,7 @@
 package io.github.rogerallen.sunangle;
 
+import com.badlogic.gdx.Gdx;
+
 import java.util.Calendar;
 import java.util.Date;
 
@@ -20,28 +22,33 @@ public class Sunobserver {
         observer_longitude = lon;
         setObserverDate();
         compute();
+        //unitTests();
     }
 
     public void setObserverDate() {
         observer_date = new Date();
-        // adjust the time to GMT
         Calendar time = Calendar.getInstance();
         time.setTime(observer_date);
+        // adjust the time to GMT via negative TimeZone offset
         int offset = -time.getTimeZone().getOffset(time.getTimeInMillis());
         time.add(Calendar.MILLISECOND, offset);
-        JD = julianDay(time.get(Calendar.YEAR), time.get(Calendar.MONTH), dayTime(time));
+        Gdx.app.log("Sunobserver", "GMT = "+time.getTime());
+        // check JD vs http://aa.usno.navy.mil/data/docs/JulianDate.php
+        JD = julianDay(time.get(Calendar.YEAR), time.get(Calendar.MONTH) + 1, dayTime(time));
+        Gdx.app.log("Sunobserver", "JD  = "+JD);
         T = (JD - 2451545.0) / 36525.0;
         Theta0 = 280.46061837 + 360.98564736629*(JD-2451545.0) + 0.000387933*T*T - T*T*T/38710000;
     }
 
     private double dayTime(Calendar t) {
         // Convert date day + hours, mins, seconds to one floating point value
-        double v = t.get(Calendar.DAY_OF_YEAR) +
-                t.get(Calendar.HOUR)/24 +
-                t.get(Calendar.MINUTE)/(24*60) +
-                t.get(Calendar.SECOND)/(24*60*60) +
-                t.get(Calendar.MILLISECOND)/(24*60*60*1000);
-        return v;
+        // DAY_OF_MONTH is 1..31
+        double v = t.get(Calendar.DAY_OF_MONTH);
+        double hms = (double)t.get(Calendar.HOUR_OF_DAY)/24 +
+                (double)t.get(Calendar.MINUTE)/(24*60) +
+                (double)t.get(Calendar.SECOND)/(24*60*60) +
+                (double)t.get(Calendar.MILLISECOND)/(24*60*60*1000);
+        return v + hms;
     }
 
     private int INT(double x) {
@@ -53,6 +60,8 @@ public class Sunobserver {
     }
 
     private double julianDay(double year, double month, double day) {
+        Gdx.app.debug("Sunobserver", "julianDay("+year+"/"+month+"/"+day+")");
+        // year = year, month = month-of-year (1..12), day = day-of-year (1..365)
         // FIXME JD not the same as found on internet
         // Take current YMD & get the Julian Day.  See Formula 7.1
         if (month <= 2) {
@@ -101,5 +110,18 @@ public class Sunobserver {
             sun_azimuth = A;
             sun_altitude = h;
         }
+    }
+
+    private void unitTests() {
+        System.err.println("Testing...");
+        double v = julianDay(2000, 1, 1.5);
+        if(2451545.0 != v) { System.err.println("FAIL 2000/1/1.5"); }
+        v = julianDay(2018, 1, 1.5);
+        if(2458120.0 != v) { System.err.println("FAIL 2018/1/1.5"); }
+        v = julianDay(2018, 6, 1.5);
+        if(2458271.0 != v) { System.err.println("FAIL 2018/6/1.5"); }
+        // http://aa.usno.navy.mil/data/docs/JulianDate.php
+        v = julianDay(2018, 6, 12.0+(23.0/24)+(30.0/(24*60)));
+        if(Math.abs(2458282.479167 - v) > 1e-6) { System.err.println("FAIL 2018/6/12.9 "+Math.abs(2458282.479167 - v)); }
     }
 }

@@ -1,6 +1,7 @@
     package io.github.rogerallen.sunangle;
 
 
+    import com.badlogic.gdx.Application;
     import com.badlogic.gdx.ApplicationAdapter;
     import com.badlogic.gdx.Gdx;
     import com.badlogic.gdx.Input;
@@ -21,6 +22,8 @@
 
         @Override
         public void create() {
+
+            Gdx.app.setLogLevel(Application.LOG_INFO); // LOG_NONE, LOG_DEBUG, LOG_ERROR, LOG_INFO
 
             obs = new Sunobserver(45, 122);
 
