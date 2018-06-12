@@ -8,8 +8,8 @@
     import com.badlogic.gdx.graphics.PerspectiveCamera;
     import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
     import com.badlogic.gdx.math.MathUtils;
-    import com.badlogic.gdx.math.Matrix4;
     import com.badlogic.gdx.math.Vector3;
+    import com.badlogic.gdx.utils.TimeUtils;
 
     public class Sunangle extends ApplicationAdapter {
 
@@ -17,10 +17,14 @@
         private PerspectiveCamera cam;
         private long startTime;
 
+        private Sunobserver obs;
+
         @Override
         public void create() {
 
-            startTime = System.currentTimeMillis();
+            obs = new Sunobserver(45, 122);
+
+            startTime = TimeUtils.millis();
 
             compassFrontPlane = new Drawable(
                     "vs_pct.glsl","fs_ct.glsl","compass.png",
@@ -114,7 +118,7 @@
         private void updateWorld() {
             // Just something to give it a bit of animation
             Vector3 ax = new Vector3(1f,0f, 0f);
-            float curTime = (float)(System.currentTimeMillis() - startTime);
+            float curTime = (float)TimeUtils.timeSinceMillis(startTime);
             float deg = 0.30f* MathUtils.sin(curTime/1000f);
             clockFrontPlane.worldTrans.rotate(ax,-deg);
             clockBackPlane.worldTrans.rotate(ax,-deg);
