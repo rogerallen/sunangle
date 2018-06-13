@@ -17,6 +17,7 @@ public class AndroidLauncher extends AndroidApplication {
 		config.r = 8;
 		config.g = 8;
 		config.b = 8;
+		config.numSamples = 4;
 		initialize(new Sunangle(), config);
 	}
 }

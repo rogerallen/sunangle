@@ -15,6 +15,7 @@ public class DesktopLauncher {
 		config.r = 8;
 		config.g = 8;
 		config.b = 8;
+		config.samples = 4;  // probably only works for fullscreen?
 		new LwjglApplication(new Sunangle(), config);
 	}
 }
