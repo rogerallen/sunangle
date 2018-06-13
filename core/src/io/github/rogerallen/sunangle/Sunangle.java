@@ -12,6 +12,8 @@
     import com.badlogic.gdx.math.Vector3;
     import com.badlogic.gdx.utils.TimeUtils;
 
+    import java.util.Date;
+
     public class Sunangle extends ApplicationAdapter {
 
         private Drawable compassFrontPlane, clockFrontPlane, compassBackPlane, clockBackPlane;
@@ -25,7 +27,8 @@
 
             Gdx.app.setLogLevel(Application.LOG_INFO); // LOG_NONE, LOG_DEBUG, LOG_ERROR, LOG_INFO
 
-            obs = new Sunobserver(45, 122);
+            Gdx.app.log("Sunangle", "lat = "+(45+(25.0/60.0))+" lon = "+(-122-(41.0/60.0)));
+            obs = new Sunobserver(45+(25.0/60.0), -122-(41.0/60.0), new Date());
 
             startTime = TimeUtils.millis();
 
