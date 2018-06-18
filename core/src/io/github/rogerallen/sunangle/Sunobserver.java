@@ -1,6 +1,8 @@
 package io.github.rogerallen.sunangle;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector3;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -10,7 +12,7 @@ import java.util.Date;
 public class Sunobserver {
     private double observer_latitude;
     private double observer_longitude;
-    private Date   observer_date;
+    private Date observer_date;
     private double JD;      // Julian Day
     private double sun_altitude;
     private double sun_azimuth;
@@ -30,26 +32,45 @@ public class Sunobserver {
         observer_date = date;
         Calendar time = Calendar.getInstance();
         time.setTime(observer_date);
-        Gdx.app.log("Sunobserver", "time = "+time.getTime());
+        Gdx.app.log("Sunobserver", "time = " + time.getTime());
         // adjust the time to GMT via negative TimeZone offset
         int offset = -time.getTimeZone().getOffset(time.getTimeInMillis());
         time.add(Calendar.MILLISECOND, offset);
-        Gdx.app.log("Sunobserver", "GMT  = "+time.getTime());
+        Gdx.app.log("Sunobserver", "GMT  = " + time.getTime());
         // check JD vs http://aa.usno.navy.mil/data/docs/JulianDate.php
         JD = julianDay(time.get(Calendar.YEAR), time.get(Calendar.MONTH) + 1, dayTime(time));
-        Gdx.app.log("Sunobserver", "JD   = "+JD);
+        Gdx.app.log("Sunobserver", "JD   = " + JD);
         // set the sun alt/az
         updateSunAltAz();
+    }
+
+    public Vector3 getSunUnitXYZ() {
+        // translate alt-az coordinates to x,y,z.
+        // Used Mathworld http://mathworld.wolfram.com/SphericalCoordinates.html
+        // but note Mathworld XYZ == Our ZXY so read carefully...
+        // Our XYZ plane is XZ is "ground" X=West, Z=North. Y=up.
+        // Azimuth is 0 at Z axis & increments clockwise around the XZ plane
+        // Altitude is elevation from the XZ plane.
+        // phi is inclination from the positive Y axis (up)
+        float phi = (float) (Math.PI / 2 - Math.toRadians(sun_altitude));
+        // theta : the azimuthal angle in the XZ-plane from the Z axis going counter-clockwise
+        float theta = (float) (2 * Math.PI - Math.toRadians(sun_azimuth));
+        float r = 1.0f;  // alt,az on unit sphere
+        // translate r, theta, phi in radians to x,y,z. (see above for XYZ map)
+        float z = r * MathUtils.cos(theta) * MathUtils.sin(phi);
+        float x = r * MathUtils.sin(theta) * MathUtils.sin(phi);
+        float y = r * MathUtils.cos(phi);
+        return new Vector3(x, y, z);
     }
 
     private static double dayTime(Calendar t) {
         // Convert date day + hours, mins, seconds to one floating point value
         // DAY_OF_MONTH is 1..31
         double v = t.get(Calendar.DAY_OF_MONTH);
-        double hms = (double)t.get(Calendar.HOUR_OF_DAY)/24 +
-                (double)t.get(Calendar.MINUTE)/(24*60) +
-                (double)t.get(Calendar.SECOND)/(24*60*60) +
-                (double)t.get(Calendar.MILLISECOND)/(24*60*60*1000);
+        double hms = (double) t.get(Calendar.HOUR_OF_DAY) / 24 +
+                (double) t.get(Calendar.MINUTE) / (24 * 60) +
+                (double) t.get(Calendar.SECOND) / (24 * 60 * 60) +
+                (double) t.get(Calendar.MILLISECOND) / (24 * 60 * 60 * 1000);
         return v + hms;
     }
 
@@ -58,31 +79,31 @@ public class Sunobserver {
         if (x < 0) {
             x = x - 1;
         }
-        return (int)x;
+        return (int) x;
     }
 
     private static double julianDay(double year, double month, double day) {
         // Take current YMD & get the Julian Day.  See Formula 7.1
         // year = year, month = month-of-year (1..12), day = day-of-year (1..365)
-        Gdx.app.debug("Sunobserver", "julianDay("+year+"/"+month+"/"+day+")");
+        Gdx.app.debug("Sunobserver", "julianDay(" + year + "/" + month + "/" + day + ")");
         if (month <= 2) {
             year = year - 1;
             month = month + 12;
         }
-        int A = INT(year/100.);
-        int B = 2 - A + INT(A/4.);
-        if ((year + month/12. + day/(12*31)) < (1582 + 10./12. + 5/(12*31))) {
+        int A = INT(year / 100.);
+        int B = 2 - A + INT(A / 4.);
+        if ((year + month / 12. + day / (12 * 31)) < (1582 + 10. / 12. + 5 / (12 * 31))) {
             // Julian Calendar
             B = 0;
         }
-        return INT(365.25*(year+4716.)) + INT(30.6001*(month+1.)) + day + B - 1524.5;
+        return INT(365.25 * (year + 4716.)) + INT(30.6001 * (month + 1.)) + day + B - 1524.5;
     }
 
     private void updateSunAltAz() {
         // helpers
         double T = (JD - 2451545.0) / 36525.0;
         // sidereal time at Greenwich (in degrees)
-        double Theta0 = 280.46061837 + 360.98564736629*(JD-2451545.0) + 0.000387933*T*T - T*T*T/38710000;
+        double Theta0 = 280.46061837 + 360.98564736629 * (JD - 2451545.0) + 0.000387933 * T * T - T * T * T / 38710000;
 
         // compute the RA/Dec position of the sun. See Chapter 24.
         double L0 = 280.46645 + 36000.76983 * T + 0.0003032 * T * T;
@@ -130,14 +151,22 @@ public class Sunobserver {
     private void unitTests() {
         System.err.println("Testing...");
         double v = julianDay(2000, 1, 1.5);
-        if(2451545.0 != v) { System.err.println("FAIL 2000/1/1.5"); }
+        if (2451545.0 != v) {
+            System.err.println("FAIL 2000/1/1.5");
+        }
         v = julianDay(2018, 1, 1.5);
-        if(2458120.0 != v) { System.err.println("FAIL 2018/1/1.5"); }
+        if (2458120.0 != v) {
+            System.err.println("FAIL 2018/1/1.5");
+        }
         v = julianDay(2018, 6, 1.5);
-        if(2458271.0 != v) { System.err.println("FAIL 2018/6/1.5"); }
+        if (2458271.0 != v) {
+            System.err.println("FAIL 2018/6/1.5");
+        }
         // http://aa.usno.navy.mil/data/docs/JulianDate.php
-        v = julianDay(2018, 6, 12.0+(23.0/24)+(30.0/(24*60)));
-        if(Math.abs(2458282.479167 - v) > 1e-6) { System.err.println("FAIL 2018/6/12.9 "+Math.abs(2458282.479167 - v)); }
+        v = julianDay(2018, 6, 12.0 + (23.0 / 24) + (30.0 / (24 * 60)));
+        if (Math.abs(2458282.479167 - v) > 1e-6) {
+            System.err.println("FAIL 2018/6/12.9 " + Math.abs(2458282.479167 - v));
+        }
 
         // TODO add more testing using http://aa.usno.navy.mil/data/docs/AltAz.php
         // Helpful for debug...
