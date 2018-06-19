@@ -36,44 +36,44 @@ public class Sunangle extends ApplicationAdapter {
                 "vs_pct.glsl", "fs_ct.glsl", "compass.png",
                 new float[]{
                         // (x, y, z),     (r, g, b, a),     (s, t),
-                        -10f, 0f, -10f, 0f, 0f, 0f, 1f, 1f, 1f,
-                        -10f, 0f, 10f, 0f, 1f, 0f, 1f, 1f, 0f,
-                        10f, 0f, -10f, 1f, 0f, 0f, 1f, 0f, 1f,
-                        10f, 0f, 10f, 1f, 1f, 0f, 1f, 0f, 0f
+                        -1f, 0f, -1f, 0f, 0f, 0f, 1f, 1f, 1f,
+                        -1f, 0f, 1f, 0f, 1f, 0f, 1f, 1f, 0f,
+                        1f, 0f, -1f, 1f, 0f, 0f, 1f, 0f, 1f,
+                        1f, 0f, 1f, 1f, 1f, 0f, 1f, 0f, 0f
                 });
 
         compassBackPlane = new Drawable(
                 "vs_pct.glsl", "fs_ct.glsl", "compass_back.png",
                 new float[]{
                         // (x, y, z),     (r, g, b, a),     (s, t),
-                        -10f, 0f, -10f, 0f, 0f, 0f, 1f, 0f, 1f,
-                        10f, 0f, -10f, 1f, 0f, 0f, 1f, 1f, 1f,
-                        -10f, 0f, 10f, 0f, 1f, 0f, 1f, 0f, 0f,
-                        10f, 0f, 10f, 1f, 1f, 0f, 1f, 1f, 0f
+                        -1f, 0f, -1f, 0f, 0f, 0f, 1f, 0f, 1f,
+                        1f, 0f, -1f, 1f, 0f, 0f, 1f, 1f, 1f,
+                        -1f, 0f, 1f, 0f, 1f, 0f, 1f, 0f, 0f,
+                        1f, 0f, 1f, 1f, 1f, 0f, 1f, 1f, 0f
                 });
 
         clockFrontPlane = new Drawable(
                 "vs_pct.glsl", "fs_ct.glsl", "clock.png",
                 new float[]{
                         // (x, y, z),     (r, g, b, a),     (s, t),
-                        -10f, -10f, 0f, 0f, 0f, 0f, 1f, 0f, 1f,
-                        10f, -10f, 0f, 1f, 0f, 0f, 1f, 1f, 1f,
-                        -10f, 10f, 0f, 0f, 0f, 1f, 1f, 0f, 0f,
-                        10f, 10f, 0f, 1f, 0f, 1f, 1f, 1f, 0f
+                        -1f, -1f, 0f, 0f, 0f, 0f, 1f, 0f, 1f,
+                        1f, -1f, 0f, 1f, 0f, 0f, 1f, 1f, 1f,
+                        -1f, 1f, 0f, 0f, 0f, 1f, 1f, 0f, 0f,
+                        1f, 1f, 0f, 1f, 0f, 1f, 1f, 1f, 0f
                 });
         clockBackPlane = new Drawable(
                 "vs_pct.glsl", "fs_ct.glsl", "clock_back.png",
                 new float[]{
                         // (x, y, z),     (r, g, b, a),     (s, t),
-                        -10f, -10f, 0f, 0f, 0f, 0f, 1f, 1f, 1f,
-                        -10f, 10f, 0f, 0f, 0f, 1f, 1f, 1f, 0f,
-                        10f, -10f, 0f, 1f, 0f, 0f, 1f, 0f, 1f,
-                        10f, 10f, 0f, 1f, 0f, 1f, 1f, 0f, 0f
+                        -1f, -1f, 0f, 0f, 0f, 0f, 1f, 1f, 1f,
+                        -1f, 1f, 0f, 0f, 0f, 1f, 1f, 1f, 0f,
+                        1f, -1f, 0f, 1f, 0f, 0f, 1f, 0f, 1f,
+                        1f, 1f, 0f, 1f, 0f, 1f, 1f, 0f, 0f
                 });
 
         //set up window into our virtual space
         cam = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        cam.position.set(0f, 20f, -20f);
+        cam.position.set(0f, 2f, -2f);
         cam.lookAt(0, 0, 0);
         cam.near = 0.1f;
         cam.far = 1000f;
@@ -159,14 +159,19 @@ public class Sunangle extends ApplicationAdapter {
         clockProjMatrix.mul(projectedVectorMatrix);
         clockProjMatrix.tra(); // ???
 
-            /*
-            // now test it out...compare with noonVec, mornVec, eveVec, upVec.
-            Vector3 t0 = (new Vector3(0f,1f,0f)).mul(clockProjMatrix);
-            Vector3 t2 = (new Vector3(-1f,0f,0f)).mul(clockProjMatrix);
-            Vector3 t3 = (new Vector3(1f,0f,0f)).mul(clockProjMatrix);
-            Vector3 t4 = (new Vector3(0f,0f,1f)).mul(clockProjMatrix);
-            */
-
+        /*
+        // now test it out...compare with noonVec, mornVec, eveVec, upVec.
+        Vector3 t0 = (new Vector3(0f,0f,0f)).mul(clockProjMatrix);  // origin
+        Vector3 t1 = (new Vector3(0f,1f,0f)).mul(clockProjMatrix);  // noon
+        float d01 = t0.dst(t1);
+        float cosTheta1 = t0.dot(t1);
+        Vector3 t2 = (new Vector3(-1f,0f,0f)).mul(clockProjMatrix); // morn
+        float d02 = t0.dst(t2);
+        Vector3 t3 = (new Vector3(1f,0f,0f)).mul(clockProjMatrix);  // eve
+        float d03 = t0.dst(t3);
+        Vector3 t4 = (new Vector3(0f,0f,1f)).mul(clockProjMatrix);  // up
+        float d04 = t0.dst(t4);
+        */
     }
 
     @Override
