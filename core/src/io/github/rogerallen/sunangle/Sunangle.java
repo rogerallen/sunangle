@@ -5,11 +5,23 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.Date;
@@ -23,6 +35,9 @@ public class Sunangle extends ApplicationAdapter {
 
     private Sunobserver obs;
 
+    private Skin skin;
+    private Stage stage;
+
     @Override
     public void create() {
 
@@ -32,6 +47,29 @@ public class Sunangle extends ApplicationAdapter {
 
         startTime = TimeUtils.millis();
 
+        createGnomonGeometry();
+
+        createStage();
+
+        //set up window into our virtual space
+        cam = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        cam.position.set(0f, 2f, -2f);
+        cam.lookAt(0, 0, 0);
+        cam.near = 0.1f;
+        cam.far = 1000f;
+        cam.update();
+
+        CameraInputController camController = new CameraInputController(cam);
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(stage);
+        multiplexer.addProcessor(camController);
+        Gdx.input.setInputProcessor(multiplexer);
+        //Gdx.input.setInputProcessor(camController);
+
+        Gdx.gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+
+    private void createGnomonGeometry() {
         compassFrontPlane = new Drawable(
                 "vs_pct.glsl", "fs_ct.glsl", "compass.png",
                 new float[]{
@@ -70,21 +108,43 @@ public class Sunangle extends ApplicationAdapter {
                         1f, -1f, 0f, 1f, 0f, 0f, 1f, 0f, 1f,
                         1f, 1f, 0f, 1f, 0f, 1f, 1f, 0f, 0f
                 });
+    }
 
-        //set up window into our virtual space
-        cam = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        cam.position.set(0f, 2f, -2f);
-        cam.lookAt(0, 0, 0);
-        cam.near = 0.1f;
-        cam.far = 1000f;
-        cam.update();
+    private void createStage() {
+        stage = new Stage();
+        //Gdx.input.setInputProcessor(stage);
 
-        CameraInputController camController = new CameraInputController(cam);
-        Gdx.input.setInputProcessor(camController);
+        skin = new Skin();
 
-        Gdx.gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
-        Gdx.gl.glEnable(GL20.GL_CULL_FACE);
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.WHITE);
+        pixmap.fill();
+        skin.add("white", new Texture(pixmap));
+
+        skin.add("default", new BitmapFont());
+        TextButton.TextButtonStyle textButtonStyle = new TextButton.TextButtonStyle();
+        textButtonStyle.up = skin.newDrawable("white", Color.DARK_GRAY);
+        textButtonStyle.down = skin.newDrawable("white", Color.DARK_GRAY);
+        textButtonStyle.checked = skin.newDrawable("white", Color.BLUE);
+        textButtonStyle.over = skin.newDrawable("white", Color.LIGHT_GRAY);
+        textButtonStyle.font = skin.getFont("default");
+        skin.add("default", textButtonStyle);
+
+        Table table = new Table();
+        table.setFillParent(true);
+        stage.addActor(table);
+
+        final TextButton button = new TextButton("Click me!", skin);
+        table.add(button);
+
+        button.addListener(new ChangeListener() {
+            public void changed(ChangeEvent event, Actor actor) {
+                System.out.println("Clicked! Is checked: " + button.isChecked());
+                button.setText("Good job!");
+            }
+        });
+
+        table.add(new Image(skin.newDrawable("white", Color.RED))).size(64);
     }
 
     private void setClockMatrix() {
@@ -159,19 +219,19 @@ public class Sunangle extends ApplicationAdapter {
         clockProjMatrix.mul(projectedVectorMatrix);
         clockProjMatrix.tra(); // ???
 
-        /*
-        // now test it out...compare with noonVec, mornVec, eveVec, upVec.
-        Vector3 t0 = (new Vector3(0f,0f,0f)).mul(clockProjMatrix);  // origin
-        Vector3 t1 = (new Vector3(0f,1f,0f)).mul(clockProjMatrix);  // noon
-        float d01 = t0.dst(t1);
-        float cosTheta1 = t0.dot(t1);
-        Vector3 t2 = (new Vector3(-1f,0f,0f)).mul(clockProjMatrix); // morn
-        float d02 = t0.dst(t2);
-        Vector3 t3 = (new Vector3(1f,0f,0f)).mul(clockProjMatrix);  // eve
-        float d03 = t0.dst(t3);
-        Vector3 t4 = (new Vector3(0f,0f,1f)).mul(clockProjMatrix);  // up
-        float d04 = t0.dst(t4);
-        */
+            /*
+            // now test it out...compare with noonVec, mornVec, eveVec, upVec.
+            Vector3 t0 = (new Vector3(0f,0f,0f)).mul(clockProjMatrix);  // origin
+            Vector3 t1 = (new Vector3(0f,1f,0f)).mul(clockProjMatrix);  // noon
+            float d01 = t0.dst(t1);
+            float cosTheta1 = t0.dot(t1);
+            Vector3 t2 = (new Vector3(-1f,0f,0f)).mul(clockProjMatrix); // morn
+            float d02 = t0.dst(t2);
+            Vector3 t3 = (new Vector3(1f,0f,0f)).mul(clockProjMatrix);  // eve
+            float d03 = t0.dst(t3);
+            Vector3 t4 = (new Vector3(0f,0f,1f)).mul(clockProjMatrix);  // up
+            float d04 = t0.dst(t4);
+            */
     }
 
     @Override
@@ -179,6 +239,18 @@ public class Sunangle extends ApplicationAdapter {
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
+        drawGnomon();
+
+        stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
+        stage.draw();
+
+        handleKeyboard();
+        updateWorld();
+    }
+
+    private void drawGnomon() {
+        Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
+        Gdx.gl.glEnable(GL20.GL_CULL_FACE);
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         Gdx.gl.glDepthFunc(GL20.GL_LEQUAL);
@@ -197,9 +269,9 @@ public class Sunangle extends ApplicationAdapter {
         compassBackPlane.render(cam.combined);
         Gdx.gl.glDisable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_ONE, GL20.GL_ZERO);
+        Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
+        Gdx.gl.glDisable(GL20.GL_CULL_FACE);
 
-        handleKeyboard();
-        updateWorld();
     }
 
     private void handleKeyboard() {
@@ -210,13 +282,13 @@ public class Sunangle extends ApplicationAdapter {
 
     private void updateWorld() {
         // Just something to give it a bit of animation
-            /*
-            Vector3 ax = new Vector3(1f,0f, 0f);
-            float curTime = (float)TimeUtils.timeSinceMillis(startTime);
-            float deg = 0.30f* MathUtils.sin(curTime/1000f);
-            clockFrontPlane.worldTrans.rotate(ax,-deg);
-            clockBackPlane.worldTrans.rotate(ax,-deg);
-            */
+                /*
+                Vector3 ax = new Vector3(1f,0f, 0f);
+                float curTime = (float)TimeUtils.timeSinceMillis(startTime);
+                float deg = 0.30f* MathUtils.sin(curTime/1000f);
+                clockFrontPlane.worldTrans.rotate(ax,-deg);
+                clockBackPlane.worldTrans.rotate(ax,-deg);
+                */
         clockFrontPlane.worldTrans.set(clockProjMatrix.cpy());
         clockBackPlane.worldTrans.set(clockProjMatrix.cpy());
     }
@@ -226,6 +298,9 @@ public class Sunangle extends ApplicationAdapter {
         cam.viewportWidth = width;
         cam.viewportHeight = height;
         cam.update();
+
+        stage.getViewport().update(width, height, true);
+
     }
 
     public void dispose() {
@@ -233,6 +308,9 @@ public class Sunangle extends ApplicationAdapter {
         clockFrontPlane.dispose();
         compassBackPlane.dispose();
         clockBackPlane.dispose();
+
+        stage.dispose();
+        skin.dispose();
     }
 
 }

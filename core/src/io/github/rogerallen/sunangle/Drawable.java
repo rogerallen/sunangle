@@ -52,13 +52,15 @@ class Drawable {
         texture.bind();
 
         shaderProgram.begin();
+        // FIXME -- glUniformMatrix4fv fails with error 1282 on Mac OS X
         shaderProgram.setUniformMatrix(u_projViewTrans, projViewMatrix);
+        int foo = Gdx.gl.glGetError();
         shaderProgram.setUniformMatrix(u_worldTrans, worldTrans);
         shaderProgram.setUniformi(u_texture, 0);
 
         vertexBufferObject.bind(shaderProgram);
         Gdx.gl.glDrawArrays(Gdx.gl.GL_TRIANGLE_STRIP, 0, vertexBufferObject.getNumVertices());
-
+        vertexBufferObject.unbind(shaderProgram);
         shaderProgram.end();
 
         Gdx.gl20.glDisable(GL20.GL_TEXTURE_2D);
