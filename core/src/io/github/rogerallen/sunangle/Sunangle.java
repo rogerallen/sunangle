@@ -26,6 +26,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.TimeUtils;
 
+import java.util.Calendar;
 import java.util.Date;
 
 public class Sunangle extends ApplicationAdapter {
@@ -36,15 +37,26 @@ public class Sunangle extends ApplicationAdapter {
     private long startTime;
 
     private Sunobserver obs;
+    private float latitude, longitude, day;
 
     private Skin skin;
     private Stage stage;
+    private Label latLabel, lonLabel, dayLabel;
 
     @Override
     public void create() {
 
         Gdx.app.setLogLevel(Application.LOG_INFO); // LOG_NONE, LOG_DEBUG, LOG_ERROR, LOG_INFO
         Gdx.app.log("Sunangle", "libGDX Version = " + com.badlogic.gdx.Version.VERSION);
+
+        // initialize the observer
+        day = 0f;
+        latitude = 45f; // (45 + (25.0 / 60.0));
+        longitude = -122f; // (-122 - (41.0 / 60.0));
+        Gdx.app.log("Sunangle", "lat = " + latitude + " lon = " + longitude);
+        Date now = new Date();
+        obs = new Sunobserver(latitude, longitude, now);
+
         setClockMatrix();
 
         startTime = TimeUtils.millis();
@@ -114,61 +126,73 @@ public class Sunangle extends ApplicationAdapter {
 
     private void createStage() {
         stage = new Stage();
+        // FIXME -- these sliders & font are too small on my tablet
         skin = new Skin(Gdx.files.internal("gdx-skins-orange/uiskin.json"));
 
-        /*
-        Table table = new Table();
-        table.setFillParent(true);
-        stage.addActor(table);
-*/
         final Slider latSlider = new Slider(-90f,90f,1f,true, skin);
         latSlider.setPosition(50f, 50f);
+        latSlider.setValue(latitude);
         stage.addActor(latSlider);
-        latSlider.addListener(new ChangeListener() {
-            public void changed(ChangeEvent event, Actor actor) {
-                System.out.println("lat = " + latSlider.getValue());
-            }
-        });
         final Slider lonSlider = new Slider(-180f,180f,1f,false, skin);
         lonSlider.setPosition(100f, 50f);
+        latSlider.setValue(longitude);
         stage.addActor(lonSlider);
-        lonSlider.addListener(new ChangeListener() {
-            public void changed(ChangeEvent event, Actor actor) {
-                System.out.println("lon = " + lonSlider.getValue());
-            }
-        });
         final Slider daySlider = new Slider(0f,365f,1f,false, skin);
-        daySlider.setPosition(600f, 50f);
+        daySlider.setPosition(lonSlider.getX() + lonSlider.getWidth() + 50f, 50f);
+        daySlider.setValue(day);
         stage.addActor(daySlider);
-        daySlider.addListener(new ChangeListener() {
-            public void changed(ChangeEvent event, Actor actor) {
-                System.out.println("day = " + daySlider.getValue());
-            }
-        });
 
-        Label latLabel = new Label("Latitude", skin);
+
+        latLabel = new Label("Latitude = "+(latitude), skin);
         latLabel.setPosition(latSlider.getX(), latSlider.getY() + latSlider.getHeight() + 20f);
         stage.addActor(latLabel);
 
-        Label lonLabel = new Label("Longitude", skin);
+        lonLabel = new Label("Longitude = "+(longitude), skin);
         lonLabel.setPosition(lonSlider.getX(), lonSlider.getY() + lonSlider.getHeight() + 20f);
         stage.addActor(lonLabel);
 
-        Label dayLabel = new Label("Days", skin);
+        dayLabel = new Label("Day = "+(day), skin);
         dayLabel.setPosition(daySlider.getX(), daySlider.getY() + daySlider.getHeight() + 20f);
         stage.addActor(dayLabel);
+
+
+        latSlider.addListener(new ChangeListener() {
+            public void changed(ChangeEvent event, Actor actor) {
+                System.out.println("lat = " + latSlider.getValue());
+                latitude = latSlider.getValue();
+                latLabel.setText("Latitude = "+(latitude));
+                obs.setObserverLatitude(latitude);
+                setClockMatrix();
+            }
+        });
+        lonSlider.addListener(new ChangeListener() {
+            public void changed(ChangeEvent event, Actor actor) {
+                System.out.println("lon = " + lonSlider.getValue());
+                longitude = lonSlider.getValue();
+                lonLabel.setText("Longitude = "+(longitude));
+                obs.setObserverLongitude(longitude);
+                setClockMatrix();
+            }
+        });
+        daySlider.addListener(new ChangeListener() {
+            public void changed(ChangeEvent event, Actor actor) {
+                System.out.println("day = " + daySlider.getValue());
+                day = daySlider.getValue();
+                dayLabel.setText("Day = "+(day));
+                Date cur_date = obs.getObserverDate();
+                Calendar time = Calendar.getInstance();
+                time.add(Calendar.DAY_OF_YEAR,(int)day);
+                obs.setTime(time.getTime());
+                setClockMatrix();
+            }
+        });
+
     }
 
     private void setClockMatrix() {
-        // initialize the observer
-        double lat = (45 + (25.0 / 60.0));
-        double lon = (-122 - (41.0 / 60.0));
-        Gdx.app.log("Sunangle", "lat = " + lat + " lon = " + lon);
-        Date now = new Date();
-        obs = new Sunobserver(lat, lon, now);
         // find out where the sun is at various times in the day.
         //Vector3 nowVec = obs.getSunUnitXYZ();
-        Date then = new Date();
+        Date then = obs.getObserverDate();
         then.setHours(12); // noon = (0,1,0)
         then.setMinutes(0);
         then.setSeconds(0);
@@ -293,14 +317,6 @@ public class Sunangle extends ApplicationAdapter {
     }
 
     private void updateWorld() {
-        // Just something to give it a bit of animation
-                /*
-                Vector3 ax = new Vector3(1f,0f, 0f);
-                float curTime = (float)TimeUtils.timeSinceMillis(startTime);
-                float deg = 0.30f* MathUtils.sin(curTime/1000f);
-                clockFrontPlane.worldTrans.rotate(ax,-deg);
-                clockBackPlane.worldTrans.rotate(ax,-deg);
-                */
         clockFrontPlane.worldTrans.set(clockProjMatrix.cpy());
         clockBackPlane.worldTrans.set(clockProjMatrix.cpy());
     }

@@ -29,6 +29,20 @@ public class Sunobserver {
         //unitTests();
     }
 
+    public Date getObserverDate() {
+        return new Date(observer_date.getTime());
+    }
+
+    public void setObserverLatitude(double latitude) {
+        observer_latitude = latitude;
+        updateSunAltAz();
+    }
+
+    public void setObserverLongitude(double longitude) {
+        observer_longitude = longitude;
+        updateSunAltAz();
+    }
+
     public void setTime(Date date) {
         observer_date = date;
         Calendar time = Calendar.getInstance();
