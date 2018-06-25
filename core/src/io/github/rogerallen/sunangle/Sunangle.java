@@ -18,7 +18,9 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
@@ -112,39 +114,49 @@ public class Sunangle extends ApplicationAdapter {
 
     private void createStage() {
         stage = new Stage();
-        //Gdx.input.setInputProcessor(stage);
+        skin = new Skin(Gdx.files.internal("gdx-skins-orange/uiskin.json"));
 
-        skin = new Skin();
-
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.WHITE);
-        pixmap.fill();
-        skin.add("white", new Texture(pixmap));
-
-        skin.add("default", new BitmapFont());
-        TextButton.TextButtonStyle textButtonStyle = new TextButton.TextButtonStyle();
-        textButtonStyle.up = skin.newDrawable("white", Color.DARK_GRAY);
-        textButtonStyle.down = skin.newDrawable("white", Color.DARK_GRAY);
-        textButtonStyle.checked = skin.newDrawable("white", Color.BLUE);
-        textButtonStyle.over = skin.newDrawable("white", Color.LIGHT_GRAY);
-        textButtonStyle.font = skin.getFont("default");
-        skin.add("default", textButtonStyle);
-
+        /*
         Table table = new Table();
         table.setFillParent(true);
         stage.addActor(table);
-
-        final TextButton button = new TextButton("Click me!", skin);
-        table.add(button);
-
-        button.addListener(new ChangeListener() {
+*/
+        final Slider latSlider = new Slider(-90f,90f,1f,true, skin);
+        latSlider.setPosition(50f, 50f);
+        stage.addActor(latSlider);
+        latSlider.addListener(new ChangeListener() {
             public void changed(ChangeEvent event, Actor actor) {
-                System.out.println("Clicked! Is checked: " + button.isChecked());
-                button.setText("Good job!");
+                System.out.println("lat = " + latSlider.getValue());
+            }
+        });
+        final Slider lonSlider = new Slider(-180f,180f,1f,false, skin);
+        lonSlider.setPosition(100f, 50f);
+        stage.addActor(lonSlider);
+        lonSlider.addListener(new ChangeListener() {
+            public void changed(ChangeEvent event, Actor actor) {
+                System.out.println("lon = " + lonSlider.getValue());
+            }
+        });
+        final Slider daySlider = new Slider(0f,365f,1f,false, skin);
+        daySlider.setPosition(600f, 50f);
+        stage.addActor(daySlider);
+        daySlider.addListener(new ChangeListener() {
+            public void changed(ChangeEvent event, Actor actor) {
+                System.out.println("day = " + daySlider.getValue());
             }
         });
 
-        table.add(new Image(skin.newDrawable("white", Color.RED))).size(64);
+        Label latLabel = new Label("Latitude", skin);
+        latLabel.setPosition(latSlider.getX(), latSlider.getY() + latSlider.getHeight() + 20f);
+        stage.addActor(latLabel);
+
+        Label lonLabel = new Label("Longitude", skin);
+        lonLabel.setPosition(lonSlider.getX(), lonSlider.getY() + lonSlider.getHeight() + 20f);
+        stage.addActor(lonLabel);
+
+        Label dayLabel = new Label("Days", skin);
+        dayLabel.setPosition(daySlider.getX(), daySlider.getY() + daySlider.getHeight() + 20f);
+        stage.addActor(dayLabel);
     }
 
     private void setClockMatrix() {
