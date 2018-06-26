@@ -2,7 +2,6 @@ package io.github.rogerallen.sunangle;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
 import java.util.Calendar;
@@ -27,6 +26,42 @@ public class Sunobserver {
         */
         setTime(date);
         //unitTests();
+    }
+
+    private static double dayTime(Calendar t) {
+        // Convert date day + hours, mins, seconds to one floating point value
+        // DAY_OF_MONTH is 1..31
+        double v = t.get(Calendar.DAY_OF_MONTH);
+        double hms = (double) t.get(Calendar.HOUR_OF_DAY) / 24 +
+                (double) t.get(Calendar.MINUTE) / (24 * 60) +
+                (double) t.get(Calendar.SECOND) / (24 * 60 * 60) +
+                (double) t.get(Calendar.MILLISECOND) / (24 * 60 * 60 * 1000);
+        return v + hms;
+    }
+
+    private static int INT(double x) {
+        // INT in Meeus' book always rounds towards negative infinity
+        if (x < 0) {
+            x = x - 1;
+        }
+        return (int) x;
+    }
+
+    private static double julianDay(double year, double month, double day) {
+        // Take current YMD & get the Julian Day.  See Formula 7.1
+        // year = year, month = month-of-year (1..12), day = day-of-year (1..365)
+        Gdx.app.debug("Sunobserver", "julianDay(" + year + "/" + month + "/" + day + ")");
+        if (month <= 2) {
+            year = year - 1;
+            month = month + 12;
+        }
+        int A = INT(year / 100.);
+        int B = 2 - A + INT(A / 4.);
+        if ((year + month / 12. + day / (12 * 31)) < (1582 + 10. / 12. + 5 / (12 * 31))) {
+            // Julian Calendar
+            B = 0;
+        }
+        return INT(365.25 * (year + 4716.)) + INT(30.6001 * (month + 1.)) + day + B - 1524.5;
     }
 
     public Date getObserverDate() {
@@ -76,42 +111,6 @@ public class Sunobserver {
         float x = r * MathUtils.sin(theta) * MathUtils.sin(phi);
         float y = r * MathUtils.cos(phi);
         return new Vector3(x, y, z);
-    }
-
-    private static double dayTime(Calendar t) {
-        // Convert date day + hours, mins, seconds to one floating point value
-        // DAY_OF_MONTH is 1..31
-        double v = t.get(Calendar.DAY_OF_MONTH);
-        double hms = (double) t.get(Calendar.HOUR_OF_DAY) / 24 +
-                (double) t.get(Calendar.MINUTE) / (24 * 60) +
-                (double) t.get(Calendar.SECOND) / (24 * 60 * 60) +
-                (double) t.get(Calendar.MILLISECOND) / (24 * 60 * 60 * 1000);
-        return v + hms;
-    }
-
-    private static int INT(double x) {
-        // INT in Meeus' book always rounds towards negative infinity
-        if (x < 0) {
-            x = x - 1;
-        }
-        return (int) x;
-    }
-
-    private static double julianDay(double year, double month, double day) {
-        // Take current YMD & get the Julian Day.  See Formula 7.1
-        // year = year, month = month-of-year (1..12), day = day-of-year (1..365)
-        Gdx.app.debug("Sunobserver", "julianDay(" + year + "/" + month + "/" + day + ")");
-        if (month <= 2) {
-            year = year - 1;
-            month = month + 12;
-        }
-        int A = INT(year / 100.);
-        int B = 2 - A + INT(A / 4.);
-        if ((year + month / 12. + day / (12 * 31)) < (1582 + 10. / 12. + 5 / (12 * 31))) {
-            // Julian Calendar
-            B = 0;
-        }
-        return INT(365.25 * (year + 4716.)) + INT(30.6001 * (month + 1.)) + day + B - 1524.5;
     }
 
     private void updateSunAltAz() {

@@ -6,23 +6,16 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.TimeUtils;
 
@@ -89,9 +82,9 @@ public class Sunangle extends ApplicationAdapter {
                 new float[]{
                         // (x, y, z),     (r, g, b, a),     (s, t),
                         -1f, 0f, -1f, 0.8f, 0.8f, 0.8f, 1f, 1f, 1f,
-                        -1f, 0f, 1f,  0.8f, 0.8f, 0.8f, 1f, 1f, 0f,
-                         1f, 0f, -1f, 0.8f, 0.8f, 0.8f, 1f, 0f, 1f,
-                         1f, 0f, 1f,  0.8f, 0.8f, 0.8f, 1f, 0f, 0f
+                        -1f, 0f, 1f, 0.8f, 0.8f, 0.8f, 1f, 1f, 0f,
+                        1f, 0f, -1f, 0.8f, 0.8f, 0.8f, 1f, 0f, 1f,
+                        1f, 0f, 1f, 0.8f, 0.8f, 0.8f, 1f, 0f, 0f
                 });
 
         compassBackPlane = new Drawable(
@@ -99,9 +92,9 @@ public class Sunangle extends ApplicationAdapter {
                 new float[]{
                         // (x, y, z),     (r, g, b, a),     (s, t),
                         -1f, 0f, -1f, 0.8f, 0.8f, 0.8f, 1f, 0f, 1f,
-                         1f, 0f, -1f, 0.8f, 0.8f, 0.8f, 1f, 1f, 1f,
-                        -1f, 0f,  1f, 0.8f, 0.8f, 0.8f, 1f, 0f, 0f,
-                         1f, 0f,  1f, 0.8f, 0.8f, 0.8f, 1f, 1f, 0f
+                        1f, 0f, -1f, 0.8f, 0.8f, 0.8f, 1f, 1f, 1f,
+                        -1f, 0f, 1f, 0.8f, 0.8f, 0.8f, 1f, 0f, 0f,
+                        1f, 0f, 1f, 0.8f, 0.8f, 0.8f, 1f, 1f, 0f
                 });
 
         clockFrontPlane = new Drawable(
@@ -129,15 +122,15 @@ public class Sunangle extends ApplicationAdapter {
         int screenWidth = Gdx.graphics.getWidth();
         int screenHeight = Gdx.graphics.getHeight();
         double sliderLenRatio = 0.75;
-        int sliderLen = (int)(screenHeight * sliderLenRatio);
-        int sliderVOffset = (int)(screenHeight * (1.0-sliderLenRatio)*0.5);
-        int sliderHOffset = (int)((screenWidth-sliderLen)*0.5);
+        int sliderLen = (int) (screenHeight * sliderLenRatio);
+        int sliderVOffset = (int) (screenHeight * (1.0 - sliderLenRatio) * 0.5);
+        int sliderHOffset = (int) ((screenWidth - sliderLen) * 0.5);
         float margin = 50f;
 
         stage = new Stage();
         skin = new Skin(Gdx.files.internal("gdx-skins-orange/uiskin.json"));
 
-        final Slider latSlider = new Slider(-90f,90f,1f,true, skin);
+        final Slider latSlider = new Slider(-90f, 90f, 1f, true, skin);
         latSlider.setPosition(margin, sliderVOffset);
         latSlider.getStyle().knob.setMinHeight(30f);
         latSlider.getStyle().knob.setMinWidth(30f);
@@ -145,18 +138,18 @@ public class Sunangle extends ApplicationAdapter {
         latSlider.setValue(latitude);
         stage.addActor(latSlider);
 
-        final Slider daySlider = new Slider(0f,365f,1f,false, skin);
+        final Slider daySlider = new Slider(0f, 365f, 1f, false, skin);
         daySlider.setPosition(sliderHOffset, margin);
         daySlider.setWidth(sliderLen);
         daySlider.setValue(day);
         stage.addActor(daySlider);
 
 
-        latLabel = new Label("Latitude = "+(latitude), skin);
+        latLabel = new Label("Latitude = " + (latitude), skin);
         latLabel.setPosition(latSlider.getX(), latSlider.getY() + latSlider.getHeight() + 20f);
         stage.addActor(latLabel);
 
-        dayLabel = new Label("Day Offset = "+(day), skin);
+        dayLabel = new Label("Day Offset = " + (day), skin);
         dayLabel.setPosition(daySlider.getX(), daySlider.getY() + daySlider.getHeight() + 20f);
         stage.addActor(dayLabel);
 
@@ -165,7 +158,7 @@ public class Sunangle extends ApplicationAdapter {
             public void changed(ChangeEvent event, Actor actor) {
                 //System.out.println("lat = " + latSlider.getValue());
                 latitude = latSlider.getValue();
-                latLabel.setText("Latitude = "+(latitude));
+                latLabel.setText("Latitude = " + (latitude));
                 obs.setObserverLatitude(latitude);
                 setClockMatrix();
             }
@@ -175,10 +168,10 @@ public class Sunangle extends ApplicationAdapter {
             public void changed(ChangeEvent event, Actor actor) {
                 //System.out.println("day = " + daySlider.getValue());
                 day = daySlider.getValue();
-                dayLabel.setText("Day Offset = "+(day));
+                dayLabel.setText("Day Offset = " + (day));
                 Date cur_date = obs.getObserverDate();
                 Calendar time = Calendar.getInstance();
-                time.add(Calendar.DAY_OF_YEAR,(int)day);
+                time.add(Calendar.DAY_OF_YEAR, (int) day);
                 obs.setTime(time.getTime());
                 setClockMatrix();
             }
