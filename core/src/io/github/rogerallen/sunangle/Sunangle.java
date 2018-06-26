@@ -41,7 +41,7 @@ public class Sunangle extends ApplicationAdapter {
 
     private Skin skin;
     private Stage stage;
-    private Label latLabel, lonLabel, dayLabel;
+    private Label latLabel, dayLabel;
 
     @Override
     public void create() {
@@ -66,7 +66,7 @@ public class Sunangle extends ApplicationAdapter {
         createStage();
 
         //set up window into our virtual space
-        cam = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        cam = new PerspectiveCamera(57, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         cam.position.set(0f, 2f, -2f);
         cam.lookAt(0, 0, 0);
         cam.near = 0.1f;
@@ -88,57 +88,66 @@ public class Sunangle extends ApplicationAdapter {
                 "vs_pct.glsl", "fs_ct.glsl", "compass.png",
                 new float[]{
                         // (x, y, z),     (r, g, b, a),     (s, t),
-                        -1f, 0f, -1f, 0f, 0f, 0f, 1f, 1f, 1f,
-                        -1f, 0f, 1f, 0f, 1f, 0f, 1f, 1f, 0f,
-                        1f, 0f, -1f, 1f, 0f, 0f, 1f, 0f, 1f,
-                        1f, 0f, 1f, 1f, 1f, 0f, 1f, 0f, 0f
+                        -1f, 0f, -1f, 0.8f, 0.8f, 0.8f, 1f, 1f, 1f,
+                        -1f, 0f, 1f,  0.8f, 0.8f, 0.8f, 1f, 1f, 0f,
+                         1f, 0f, -1f, 0.8f, 0.8f, 0.8f, 1f, 0f, 1f,
+                         1f, 0f, 1f,  0.8f, 0.8f, 0.8f, 1f, 0f, 0f
                 });
 
         compassBackPlane = new Drawable(
                 "vs_pct.glsl", "fs_ct.glsl", "compass_back.png",
                 new float[]{
                         // (x, y, z),     (r, g, b, a),     (s, t),
-                        -1f, 0f, -1f, 0f, 0f, 0f, 1f, 0f, 1f,
-                        1f, 0f, -1f, 1f, 0f, 0f, 1f, 1f, 1f,
-                        -1f, 0f, 1f, 0f, 1f, 0f, 1f, 0f, 0f,
-                        1f, 0f, 1f, 1f, 1f, 0f, 1f, 1f, 0f
+                        -1f, 0f, -1f, 0.8f, 0.8f, 0.8f, 1f, 0f, 1f,
+                         1f, 0f, -1f, 0.8f, 0.8f, 0.8f, 1f, 1f, 1f,
+                        -1f, 0f,  1f, 0.8f, 0.8f, 0.8f, 1f, 0f, 0f,
+                         1f, 0f,  1f, 0.8f, 0.8f, 0.8f, 1f, 1f, 0f
                 });
 
         clockFrontPlane = new Drawable(
                 "vs_pct.glsl", "fs_ct.glsl", "clock.png",
                 new float[]{
                         // (x, y, z),     (r, g, b, a),     (s, t),
-                        -1f, -1f, 0f, 0f, 0f, 0f, 1f, 0f, 1f,
-                        1f, -1f, 0f, 1f, 0f, 0f, 1f, 1f, 1f,
-                        -1f, 1f, 0f, 0f, 0f, 1f, 1f, 0f, 0f,
-                        1f, 1f, 0f, 1f, 0f, 1f, 1f, 1f, 0f
+                        -1f, -1f, 0f, 1f, 1f, 1f, 1f, 0f, 1f,
+                        1f, -1f, 0f, 1f, 1f, 1f, 1f, 1f, 1f,
+                        -1f, 1f, 0f, 1f, 1f, 1f, 1f, 0f, 0f,
+                        1f, 1f, 0f, 1f, 1f, 1f, 1f, 1f, 0f
                 });
         clockBackPlane = new Drawable(
                 "vs_pct.glsl", "fs_ct.glsl", "clock_back.png",
                 new float[]{
                         // (x, y, z),     (r, g, b, a),     (s, t),
-                        -1f, -1f, 0f, 0f, 0f, 0f, 1f, 1f, 1f,
-                        -1f, 1f, 0f, 0f, 0f, 1f, 1f, 1f, 0f,
-                        1f, -1f, 0f, 1f, 0f, 0f, 1f, 0f, 1f,
-                        1f, 1f, 0f, 1f, 0f, 1f, 1f, 0f, 0f
+                        -1f, -1f, 0f, 1f, 1f, 1f, 1f, 1f, 1f,
+                        -1f, 1f, 0f, 1f, 1f, 1f, 1f, 1f, 0f,
+                        1f, -1f, 0f, 1f, 1f, 1f, 1f, 0f, 1f,
+                        1f, 1f, 0f, 1f, 1f, 1f, 1f, 0f, 0f
                 });
     }
 
     private void createStage() {
+
+        int screenWidth = Gdx.graphics.getWidth();
+        int screenHeight = Gdx.graphics.getHeight();
+        double sliderLenRatio = 0.75;
+        int sliderLen = (int)(screenHeight * sliderLenRatio);
+        int sliderVOffset = (int)(screenHeight * (1.0-sliderLenRatio)*0.5);
+        int sliderHOffset = (int)((screenWidth-sliderLen)*0.5);
+        float margin = 50f;
+
         stage = new Stage();
-        // FIXME -- these sliders & font are too small on my tablet
         skin = new Skin(Gdx.files.internal("gdx-skins-orange/uiskin.json"));
 
         final Slider latSlider = new Slider(-90f,90f,1f,true, skin);
-        latSlider.setPosition(50f, 50f);
+        latSlider.setPosition(margin, sliderVOffset);
+        latSlider.getStyle().knob.setMinHeight(30f);
+        latSlider.getStyle().knob.setMinWidth(30f);
+        latSlider.setHeight(sliderLen);
         latSlider.setValue(latitude);
         stage.addActor(latSlider);
-        final Slider lonSlider = new Slider(-180f,180f,1f,false, skin);
-        lonSlider.setPosition(100f, 50f);
-        latSlider.setValue(longitude);
-        stage.addActor(lonSlider);
+
         final Slider daySlider = new Slider(0f,365f,1f,false, skin);
-        daySlider.setPosition(lonSlider.getX() + lonSlider.getWidth() + 50f, 50f);
+        daySlider.setPosition(sliderHOffset, margin);
+        daySlider.setWidth(sliderLen);
         daySlider.setValue(day);
         stage.addActor(daySlider);
 
@@ -147,38 +156,26 @@ public class Sunangle extends ApplicationAdapter {
         latLabel.setPosition(latSlider.getX(), latSlider.getY() + latSlider.getHeight() + 20f);
         stage.addActor(latLabel);
 
-        lonLabel = new Label("Longitude = "+(longitude), skin);
-        lonLabel.setPosition(lonSlider.getX(), lonSlider.getY() + lonSlider.getHeight() + 20f);
-        stage.addActor(lonLabel);
-
-        dayLabel = new Label("Day = "+(day), skin);
+        dayLabel = new Label("Day Offset = "+(day), skin);
         dayLabel.setPosition(daySlider.getX(), daySlider.getY() + daySlider.getHeight() + 20f);
         stage.addActor(dayLabel);
 
 
         latSlider.addListener(new ChangeListener() {
             public void changed(ChangeEvent event, Actor actor) {
-                System.out.println("lat = " + latSlider.getValue());
+                //System.out.println("lat = " + latSlider.getValue());
                 latitude = latSlider.getValue();
                 latLabel.setText("Latitude = "+(latitude));
                 obs.setObserverLatitude(latitude);
                 setClockMatrix();
             }
         });
-        lonSlider.addListener(new ChangeListener() {
-            public void changed(ChangeEvent event, Actor actor) {
-                System.out.println("lon = " + lonSlider.getValue());
-                longitude = lonSlider.getValue();
-                lonLabel.setText("Longitude = "+(longitude));
-                obs.setObserverLongitude(longitude);
-                setClockMatrix();
-            }
-        });
+
         daySlider.addListener(new ChangeListener() {
             public void changed(ChangeEvent event, Actor actor) {
-                System.out.println("day = " + daySlider.getValue());
+                //System.out.println("day = " + daySlider.getValue());
                 day = daySlider.getValue();
-                dayLabel.setText("Day = "+(day));
+                dayLabel.setText("Day Offset = "+(day));
                 Date cur_date = obs.getObserverDate();
                 Calendar time = Calendar.getInstance();
                 time.add(Calendar.DAY_OF_YEAR,(int)day);
@@ -191,8 +188,8 @@ public class Sunangle extends ApplicationAdapter {
 
     private void setClockMatrix() {
         // find out where the sun is at various times in the day.
-        //Vector3 nowVec = obs.getSunUnitXYZ();
         Date then = obs.getObserverDate();
+        // TODO -- set*() methods are deprecated.
         then.setHours(12); // noon = (0,1,0)
         then.setMinutes(0);
         then.setSeconds(0);
@@ -206,9 +203,6 @@ public class Sunangle extends ApplicationAdapter {
         Vector3 mornVec = obs.getSunUnitXYZ();
         Vector3 upVec = noonVec.cpy();
         upVec.crs(mornVec); // up = (0, 0, 1)
-
-        // startVecs * worldProjMatrix = projVecs
-        // worldProjMatrix = projVecs * (startVecs ^ -1)
 
         Matrix4 startVectorMatrix = new Matrix4();
         startVectorMatrix.val[Matrix4.M00] = 0.0f; // noon = (0,1,0)
@@ -250,9 +244,12 @@ public class Sunangle extends ApplicationAdapter {
 
         // This gave me the clue to solve this:
         // https://math.stackexchange.com/questions/312696/how-to-find-a-transformation-matrix-having-several-original-points-and-their-res
-        // But -- why do we need to transpose the Matrix?  Found this by accident.
+        // startVecs * worldProjMatrix = projVecs
+        // (startVecs ^ -1) * startVecs * worldProjMatrix = (startVecs ^ -1) * projVecs
+        // worldProjMatrix = (startVecs ^ -1) * projVecs
         clockProjMatrix = invStartVectorMatrix.cpy();
         clockProjMatrix.mul(projectedVectorMatrix);
+        // TODO -- why do we need to transpose the Matrix?  Found this by accident.
         clockProjMatrix.tra(); // ???
 
             /*
