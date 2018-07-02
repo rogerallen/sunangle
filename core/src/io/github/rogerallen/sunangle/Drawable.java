@@ -18,9 +18,11 @@ class Drawable {
     private int u_worldTrans;
     private int u_texture;
     private Texture texture;
+    int mode;
 
-    Drawable(String vs_shader_path, String fs_shader_path, String texture_path, float[] vertices) {
+    Drawable(String vs_shader_path, String fs_shader_path, String texture_path, int mode, float[] vertices) {
         worldTrans = new Matrix4().idt();
+        this.mode = mode;
 
         //create vertex attributes which define how data is accessed in VBO
         VertexAttribute vA = new VertexAttribute(VertexAttributes.Usage.Position, 3, "a_position");
@@ -60,7 +62,7 @@ class Drawable {
         shaderProgram.setUniformi(u_texture, 0);
 
         vertexBufferObject.bind(shaderProgram);
-        Gdx.gl.glDrawArrays(Gdx.gl.GL_TRIANGLE_STRIP, 0, vertexBufferObject.getNumVertices());
+        Gdx.gl.glDrawArrays( mode, 0, vertexBufferObject.getNumVertices());
         vertexBufferObject.unbind(shaderProgram);
         shaderProgram.end();
 

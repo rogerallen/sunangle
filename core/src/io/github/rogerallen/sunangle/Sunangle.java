@@ -9,6 +9,7 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -82,49 +83,123 @@ public class Sunangle extends ApplicationAdapter {
     }
 
     private void createGnomonGeometry() {
+        float[] vary0 = new float[362*9];
+        int i = 0;
+        vary0[i*9+0] = 0f; vary0[i*9+1] = 0f;  vary0[i*9+2] = 0f; // xyz
+        vary0[i*9+3] = 0.8f; vary0[i*9+4] = 0.8f;  vary0[i*9+5] = 0.8f; vary0[i*9+6] = 1f; // rgba
+        vary0[i*9+7] = 0.5f; vary0[i*9+8] = 0.5f; // st
+        for(i = 0; i <= 360; i += 1) {
+            float u = 1.0f*MathUtils.cos(2.0f* MathUtils.PI*(360-i)/360f);
+            float v = 1.0f*MathUtils.sin(2.0f* MathUtils.PI*(360-i)/360f);
+
+            vary0[(i+1)*9+0] = u;    vary0[(i+1)*9+1] = 0f;    vary0[(i+1)*9+2] = v; // xyz
+            vary0[(i+1)*9+3] = 0.8f; vary0[(i+1)*9+4] = 0.8f;  vary0[(i+1)*9+5] = 0.8f; vary0[(i+1)*9+6] = 1f; // rgba
+            vary0[(i+1)*9+7] = (1f+u)/2f; vary0[(i+1)*9+8] = (1f+v)/2f; // st
+        }
         compassFrontPlane = new Drawable(
                 "vs_pct.glsl", "fs_ct.glsl", "compass.png",
-                new float[]{
+                Gdx.gl.GL_TRIANGLE_FAN,
+                vary0
+                /*new float[]{
                         // (x, y, z),     (r, g, b, a),     (s, t),
                         -1f, 0f, -1f, 0.8f, 0.8f, 0.8f, 1f, 1f, 1f,
                         -1f, 0f, 1f, 0.8f, 0.8f, 0.8f, 1f, 1f, 0f,
                         1f, 0f, -1f, 0.8f, 0.8f, 0.8f, 1f, 0f, 1f,
                         1f, 0f, 1f, 0.8f, 0.8f, 0.8f, 1f, 0f, 0f
-                });
+                }*/);
 
+        float[] vary1 = new float[362*9];
+        i = 0;
+        vary1[i*9+0] = 0f; vary1[i*9+1] = 0f;  vary1[i*9+2] = 0f; // xyz
+        vary1[i*9+3] = 0.4f; vary1[i*9+4] = 0.4f;  vary1[i*9+5] = 0.4f; vary1[i*9+6] = 1f; // rgba
+        vary1[i*9+7] = 0.5f; vary1[i*9+8] = 0.5f; // st
+        for(i = 0; i <= 360; i += 1) {
+            float u = 1.0f*MathUtils.cos(2.0f* MathUtils.PI*i/360f);
+            float v = 1.0f*MathUtils.sin(2.0f* MathUtils.PI*i/360f);
+
+            vary1[(i+1)*9+0] = u;    vary1[(i+1)*9+1] = 0f;    vary1[(i+1)*9+2] = v; // xyz
+            vary1[(i+1)*9+3] = 0.4f; vary1[(i+1)*9+4] = 0.4f;  vary1[(i+1)*9+5] = 0.4f; vary1[(i+1)*9+6] = 1f; // rgba
+            vary1[(i+1)*9+7] = 1-(1f+u)/2f; vary1[(i+1)*9+8] = (1f+v)/2f; // st
+        }
         compassBackPlane = new Drawable(
                 "vs_pct.glsl", "fs_ct.glsl", "compass_back.png",
+                Gdx.gl.GL_TRIANGLE_FAN,
+                vary1 /*
                 new float[]{
                         // (x, y, z),     (r, g, b, a),     (s, t),
                         -1f, 0f, -1f, 0.4f, 0.4f, 0.4f, 1f, 0f, 1f,
                         1f, 0f, -1f, 0.4f, 0.4f, 0.4f, 1f, 1f, 1f,
                         -1f, 0f, 1f, 0.4f, 0.4f, 0.4f, 1f, 0f, 0f,
                         1f, 0f, 1f, 0.4f, 0.4f, 0.4f, 1f, 1f, 0f
-                });
+                }*/);
 
+        //  0 --- 1
+        //  |  /  |
+        //  2 --- 3
+        //  |  /  |
+        //  4 --- 5
+        float[] vary2 = new float[361*2*9];
+        i = 0;
+        float r0 = 0.75f;
+        float r1 = 1.0f;
+        for(i = 0; i <= 360; i += 1) {
+            float theta = 2.0f* MathUtils.PI*i/360f;
+            float u0 = r0*MathUtils.cos(theta);
+            float v0 = r0*MathUtils.sin(theta);
+            float u1 = r1*MathUtils.cos(theta);
+            float v1 = r1*MathUtils.sin(theta);
+
+            vary2[(2*i+0)*9+0] = u0;         vary2[(2*i+0)*9+1] = v0;    vary2[(2*i+0)*9+2] = 0f; // xyz
+            vary2[(2*i+0)*9+3] = 1f;         vary2[(2*i+0)*9+4] = 1f;    vary2[(2*i+0)*9+5] = 0f; vary2[(2*i+0)*9+6] = 1f; // rgba
+            vary2[(2*i+0)*9+7] = (1f+u0)/2f; vary2[(2*i+0)*9+8] = 1f-(1f+v0)/2f; // st
+            vary2[(2*i+1)*9+0] = u1;         vary2[(2*i+1)*9+1] = v1;    vary2[(2*i+1)*9+2] = 0f; // xyz
+            vary2[(2*i+1)*9+3] = 1f;         vary2[(2*i+1)*9+4] = 1f;    vary2[(2*i+1)*9+5] = 0f; vary2[(2*i+1)*9+6] = 1f; // rgba
+            vary2[(2*i+1)*9+7] = (1f+u1)/2f; vary2[(2*i+1)*9+8] = 1f-(1f+v1)/2f; // st
+        }
         clockFrontPlane = new Drawable(
                 "vs_pct.glsl", "fs_ct.glsl", "clock.png",
-                new float[]{
+                Gdx.gl.GL_TRIANGLE_STRIP,
+                vary2
+                /* new float[]{
                         // (x, y, z),     (r, g, b, a),     (s, t),
                         -1f, -1f, 0f, 1f, 1f, 0f, 1f, 0f, 1f,
                         1f, -1f, 0f, 1f, 1f, 0f, 1f, 1f, 1f,
                         -1f, 1f, 0f, 1f, 1f, 0f, 1f, 0f, 0f,
                         1f, 1f, 0f, 1f, 1f, 0f, 1f, 1f, 0f
-                });
+                }*/);
+        float[] vary3 = new float[361*2*9];
+        i = 0;
+        for(i = 0; i <= 360; i += 1) {
+            float theta = 2.0f* MathUtils.PI*(360-i)/360f;
+            float u0 = r0*MathUtils.cos(theta);
+            float v0 = r0*MathUtils.sin(theta);
+            float u1 = r1*MathUtils.cos(theta);
+            float v1 = r1*MathUtils.sin(theta);
+
+            vary3[(2*i+0)*9+0] = u0;         vary3[(2*i+0)*9+1] = v0;    vary3[(2*i+0)*9+2] = 0f; // xyz
+            vary3[(2*i+0)*9+3] = 1f;         vary3[(2*i+0)*9+4] = 1f;    vary3[(2*i+0)*9+5] = 0f; vary3[(2*i+0)*9+6] = 1f; // rgba
+            vary3[(2*i+0)*9+7] = 1f-(1f+u0)/2f; vary3[(2*i+0)*9+8] = 1f-(1f+v0)/2f; // st
+            vary3[(2*i+1)*9+0] = u1;         vary3[(2*i+1)*9+1] = v1;    vary3[(2*i+1)*9+2] = 0f; // xyz
+            vary3[(2*i+1)*9+3] = 1f;         vary3[(2*i+1)*9+4] = 1f;    vary3[(2*i+1)*9+5] = 0f; vary3[(2*i+1)*9+6] = 1f; // rgba
+            vary3[(2*i+1)*9+7] = 1f-(1f+u1)/2f; vary3[(2*i+1)*9+8] = 1f-(1f+v1)/2f; // st
+        }
         clockBackPlane = new Drawable(
                 "vs_pct.glsl", "fs_ct.glsl", "clock_back.png",
-                new float[]{
+                Gdx.gl.GL_TRIANGLE_STRIP,
+                vary3
+                /*new float[]{
                         // (x, y, z),     (r, g, b, a),     (s, t),
                         -1f, -1f, 0f, 1f, 1f, 0f, 1f, 1f, 1f,
                         -1f, 1f, 0f, 1f, 1f, 0f, 1f, 1f, 0f,
                         1f, -1f, 0f, 1f, 1f, 0f, 1f, 0f, 1f,
                         1f, 1f, 0f, 1f, 1f, 0f, 1f, 0f, 0f
-                });
+                }*/);
     }
 
     private void createDudeGeometry() {
         dudeFrontPlane = new Drawable(
                 "vs_pct.glsl", "fs_ct.glsl", "dude.png",
+                Gdx.gl.GL_TRIANGLE_STRIP,
                 new float[]{
                         // (x, y, z),     (r, g, b, a),     (s, t),
                         -0.2f, -0.2f, 0f, 0.9f, 0.4f, 0.8f, 1f, 1f, 1f,
@@ -135,6 +210,7 @@ public class Sunangle extends ApplicationAdapter {
 
         dudeBackPlane = new Drawable(
                 "vs_pct.glsl", "fs_ct.glsl", "dude.png",
+                Gdx.gl.GL_TRIANGLE_STRIP,
                 new float[]{
                         // (x, y, z),     (r, g, b, a),     (s, t),
                         -0.2f, -0.2f, 0f, 0.9f, 0.4f, 0.8f, 1f, 0f, 1f,
@@ -153,6 +229,7 @@ public class Sunangle extends ApplicationAdapter {
     private void createSunGeometry() {
         sunFrontPlane = new Drawable(
                 "vs_pct.glsl", "fs_ct.glsl", "sun.png",
+                Gdx.gl.GL_TRIANGLE_STRIP,
                 new float[]{
                         // (x, y, z),     (r, g, b, a),     (s, t),
                         -0.3f, -0.3f, 0f, 0.9f, 0.9f, 0.1f, 1f, 1f, 1f,
@@ -163,6 +240,7 @@ public class Sunangle extends ApplicationAdapter {
 
         sunBackPlane = new Drawable(
                 "vs_pct.glsl", "fs_ct.glsl", "sun.png",
+                Gdx.gl.GL_TRIANGLE_STRIP,
                 new float[]{
                         // (x, y, z),     (r, g, b, a),     (s, t),
                         -0.3f, -0.3f, 0f, 0.9f, 0.9f, 0.1f, 1f, 0f, 1f,
@@ -355,14 +433,14 @@ public class Sunangle extends ApplicationAdapter {
         // use the compassPlane alpha=1 in the FB to enable only that region
         // this will require clearcolor=0,0,0
         Gdx.gl.glBlendFunc(GL20.GL_ONE_MINUS_DST_ALPHA, GL20.GL_DST_ALPHA);
-        clockFrontPlane.render(cam.combined);
-        clockBackPlane.render(cam.combined);
-        compassBackPlane.render(cam.combined);
+        //clockFrontPlane.render(cam.combined);
+        //clockBackPlane.render(cam.combined);
+        //compassBackPlane.render(cam.combined);
 
-        dudeFrontPlane.render(cam.combined);
-        dudeBackPlane.render(cam.combined);
-        //sunFrontPlane.render(cam.combined);
-        //sunBackPlane.render(cam.combined);        compassBackPlane.render(cam.combined);
+        //dudeFrontPlane.render(cam.combined);
+        //dudeBackPlane.render(cam.combined);
+        sunFrontPlane.render(cam.combined);
+        sunBackPlane.render(cam.combined);        compassBackPlane.render(cam.combined);
 
         Gdx.gl.glDisable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_ONE, GL20.GL_ZERO);
