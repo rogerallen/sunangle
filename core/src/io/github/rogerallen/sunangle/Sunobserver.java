@@ -122,13 +122,13 @@ public class Sunobserver {
         // compute the RA/Dec position of the sun. See Chapter 24.
         double L0 = 280.46645 + 36000.76983 * T + 0.0003032 * T * T;
         double M = 357.52910 + 35999.05030 * T + 0.0001559 * T * T - 0.00000048 * T * T * T;
-        double e = 0.016708617 - 0.000042037 * T + 0.0000001236 * T * T;
+        //double e = 0.016708617 - 0.000042037 * T + 0.0000001236 * T * T; /// TODO review usage
         double C = (1.914600 - 0.004817 * T - 0.000014 * T * T) * Math.sin(Math.toRadians(M)) +
                 (0.019993 - 0.000101 * T) * Math.sin(Math.toRadians(2 * M)) +
                 0.000290 * Math.sin(Math.toRadians(3 * M));
         double Theta = L0 + C;
-        double v = M + C;
-        double R = 1.000001018 * (1 - e * e) / (1 + e * Math.cos(Math.toRadians(v)));
+        //double v = M + C; // TODO -- review usage
+        //double R = 1.000001018 * (1 - e * e) / (1 + e * Math.cos(Math.toRadians(v))); // TODO -- review if should be used
         double Omega = 125.04 - 1934.136 * T;
         double Lambda = Theta - 0.00569 - 0.00478 * Math.sin(Math.toRadians(Omega));
         double epsilon = 23. + 26. / 60. + 21.448 / (60. * 60.) -
