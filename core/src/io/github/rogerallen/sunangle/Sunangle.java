@@ -17,7 +17,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -25,12 +24,16 @@ import java.util.Date;
 public class Sunangle extends ApplicationAdapter {
 
     private Drawable compassFrontPlane, clockFrontPlane, compassBackPlane, clockBackPlane;
+    private Drawable dudeFrontPlane, dudeBackPlane, sunFrontPlane, sunBackPlane;
     private Matrix4 clockProjMatrix;
-    private PerspectiveCamera cam;
-    private long startTime;
+    private Matrix4 dudeMatrix;
+    private Matrix4 sunMatrix;
 
+    private PerspectiveCamera cam;
+
+    //private long startTime;
     private Sunobserver obs;
-    private float latitude, longitude, day;
+    private float latitude, /*longitude,*/ day;
 
     private Skin skin;
     private Stage stage;
@@ -45,16 +48,18 @@ public class Sunangle extends ApplicationAdapter {
         // initialize the observer
         day = 0f;
         latitude = 45f; // (45 + (25.0 / 60.0));
-        longitude = -122f; // (-122 - (41.0 / 60.0));
+        float longitude = -122f; // (-122 - (41.0 / 60.0));
         Gdx.app.log("Sunangle", "lat = " + latitude + " lon = " + longitude);
         Date now = new Date();
         obs = new Sunobserver(latitude, longitude, now);
 
         setClockMatrix();
 
-        startTime = TimeUtils.millis();
+        //startTime = TimeUtils.millis();
 
         createGnomonGeometry();
+        createDudeGeometry();
+        createSunGeometry();
 
         createStage();
 
@@ -91,30 +96,81 @@ public class Sunangle extends ApplicationAdapter {
                 "vs_pct.glsl", "fs_ct.glsl", "compass_back.png",
                 new float[]{
                         // (x, y, z),     (r, g, b, a),     (s, t),
-                        -1f, 0f, -1f, 0.8f, 0.8f, 0.8f, 1f, 0f, 1f,
-                        1f, 0f, -1f, 0.8f, 0.8f, 0.8f, 1f, 1f, 1f,
-                        -1f, 0f, 1f, 0.8f, 0.8f, 0.8f, 1f, 0f, 0f,
-                        1f, 0f, 1f, 0.8f, 0.8f, 0.8f, 1f, 1f, 0f
+                        -1f, 0f, -1f, 0.4f, 0.4f, 0.4f, 1f, 0f, 1f,
+                        1f, 0f, -1f, 0.4f, 0.4f, 0.4f, 1f, 1f, 1f,
+                        -1f, 0f, 1f, 0.4f, 0.4f, 0.4f, 1f, 0f, 0f,
+                        1f, 0f, 1f, 0.4f, 0.4f, 0.4f, 1f, 1f, 0f
                 });
 
         clockFrontPlane = new Drawable(
                 "vs_pct.glsl", "fs_ct.glsl", "clock.png",
                 new float[]{
                         // (x, y, z),     (r, g, b, a),     (s, t),
-                        -1f, -1f, 0f, 1f, 1f, 1f, 1f, 0f, 1f,
-                        1f, -1f, 0f, 1f, 1f, 1f, 1f, 1f, 1f,
-                        -1f, 1f, 0f, 1f, 1f, 1f, 1f, 0f, 0f,
-                        1f, 1f, 0f, 1f, 1f, 1f, 1f, 1f, 0f
+                        -1f, -1f, 0f, 1f, 1f, 0f, 1f, 0f, 1f,
+                        1f, -1f, 0f, 1f, 1f, 0f, 1f, 1f, 1f,
+                        -1f, 1f, 0f, 1f, 1f, 0f, 1f, 0f, 0f,
+                        1f, 1f, 0f, 1f, 1f, 0f, 1f, 1f, 0f
                 });
         clockBackPlane = new Drawable(
                 "vs_pct.glsl", "fs_ct.glsl", "clock_back.png",
                 new float[]{
                         // (x, y, z),     (r, g, b, a),     (s, t),
-                        -1f, -1f, 0f, 1f, 1f, 1f, 1f, 1f, 1f,
-                        -1f, 1f, 0f, 1f, 1f, 1f, 1f, 1f, 0f,
-                        1f, -1f, 0f, 1f, 1f, 1f, 1f, 0f, 1f,
-                        1f, 1f, 0f, 1f, 1f, 1f, 1f, 0f, 0f
+                        -1f, -1f, 0f, 1f, 1f, 0f, 1f, 1f, 1f,
+                        -1f, 1f, 0f, 1f, 1f, 0f, 1f, 1f, 0f,
+                        1f, -1f, 0f, 1f, 1f, 0f, 1f, 0f, 1f,
+                        1f, 1f, 0f, 1f, 1f, 0f, 1f, 0f, 0f
                 });
+    }
+
+    private void createDudeGeometry() {
+        dudeFrontPlane = new Drawable(
+                "vs_pct.glsl", "fs_ct.glsl", "dude.png",
+                new float[]{
+                        // (x, y, z),     (r, g, b, a),     (s, t),
+                        -0.2f, -0.2f, 0f, 0.9f, 0.4f, 0.8f, 1f, 1f, 1f,
+                        -0.2f, 0.2f, 0f, 0.9f, 0.4f, 0.8f, 1f, 1f, 0f,
+                        0.2f, -0.2f, 0f, 0.9f, 0.4f, 0.8f, 1f, 0f, 1f,
+                        0.2f, 0.2f, 0f, 0.9f, 0.4f, 0.8f, 1f, 0f, 0f
+                });
+
+        dudeBackPlane = new Drawable(
+                "vs_pct.glsl", "fs_ct.glsl", "dude.png",
+                new float[]{
+                        // (x, y, z),     (r, g, b, a),     (s, t),
+                        -0.2f, -0.2f, 0f, 0.9f, 0.4f, 0.8f, 1f, 0f, 1f,
+                        0.2f, -0.2f, 0f, 0.9f, 0.4f, 0.8f, 1f, 1f, 1f,
+                        -0.2f, 0.2f, 0f, 0.9f, 0.4f, 0.8f, 1f, 0f, 0f,
+                        0.2f, 0.2f, 0f, 0.9f, 0.4f, 0.8f, 1f, 1f, 0f
+                });
+
+        dudeMatrix = new Matrix4().idt();
+        dudeMatrix.translate(0.0f,-0.2f*(4.0f/6.0f), 0.0f);
+        dudeFrontPlane.worldTrans.set(dudeMatrix);
+        dudeBackPlane.worldTrans.set(dudeMatrix);
+
+    }
+
+    private void createSunGeometry() {
+        sunFrontPlane = new Drawable(
+                "vs_pct.glsl", "fs_ct.glsl", "sun.png",
+                new float[]{
+                        // (x, y, z),     (r, g, b, a),     (s, t),
+                        -0.3f, -0.3f, 0f, 0.9f, 0.9f, 0.1f, 1f, 1f, 1f,
+                        -0.3f, 0.3f, 0f, 0.9f, 0.9f, 0.1f, 1f, 1f, 0f,
+                        0.3f, -0.3f, 0f, 0.9f, 0.9f, 0.1f, 1f, 0f, 1f,
+                        0.3f, 0.3f, 0f, 0.9f, 0.9f, 0.1f, 1f, 0f, 0f
+                });
+
+        sunBackPlane = new Drawable(
+                "vs_pct.glsl", "fs_ct.glsl", "sun.png",
+                new float[]{
+                        // (x, y, z),     (r, g, b, a),     (s, t),
+                        -0.3f, -0.3f, 0f, 0.9f, 0.9f, 0.1f, 1f, 0f, 1f,
+                        0.3f, -0.3f, 0f, 0.9f, 0.9f, 0.1f, 1f, 1f, 1f,
+                        -0.3f, 0.3f, 0f, 0.9f, 0.9f, 0.1f, 1f, 0f, 0f,
+                        0.3f, 0.3f, 0f, 0.9f, 0.9f, 0.1f, 1f, 1f, 0f
+                });
+
     }
 
     private void createStage() {
@@ -144,7 +200,6 @@ public class Sunangle extends ApplicationAdapter {
         daySlider.setValue(day);
         stage.addActor(daySlider);
 
-
         latLabel = new Label("Latitude = " + (latitude), skin);
         latLabel.setPosition(latSlider.getX(), latSlider.getY() + latSlider.getHeight() + 20f);
         stage.addActor(latLabel);
@@ -169,8 +224,8 @@ public class Sunangle extends ApplicationAdapter {
                 //System.out.println("day = " + daySlider.getValue());
                 day = daySlider.getValue();
                 dayLabel.setText("Day Offset = " + (day));
-                Date cur_date = obs.getObserverDate();
-                Calendar time = Calendar.getInstance();
+                //Date cur_date = obs.getObserverDate();
+                Calendar time = Calendar.getInstance(); // TODO use cur_date
                 time.add(Calendar.DAY_OF_YEAR, (int) day);
                 obs.setTime(time.getTime());
                 setClockMatrix();
@@ -181,7 +236,12 @@ public class Sunangle extends ApplicationAdapter {
 
     private void setClockMatrix() {
         // find out where the sun is at various times in the day.
+        Date now = obs.getObserverDate();
+        Vector3 sunVec = obs.getSunUnitXYZ();
+        sunMatrix = new Matrix4().idt();
+        sunMatrix.translate(sunVec);
         Date then = obs.getObserverDate();
+
         // TODO -- set*() methods are deprecated.
         then.setHours(12); // noon = (0,1,0)
         then.setMinutes(0);
@@ -196,6 +256,7 @@ public class Sunangle extends ApplicationAdapter {
         Vector3 mornVec = obs.getSunUnitXYZ();
         Vector3 upVec = noonVec.cpy();
         upVec.crs(mornVec); // up = (0, 0, 1)
+        obs.setTime(now);
 
         Matrix4 startVectorMatrix = new Matrix4();
         startVectorMatrix.val[Matrix4.M00] = 0.0f; // noon = (0,1,0)
@@ -285,6 +346,10 @@ public class Sunangle extends ApplicationAdapter {
         clockFrontPlane.render(cam.combined);
         compassBackPlane.render(cam.combined);
         clockBackPlane.render(cam.combined);
+        dudeFrontPlane.render(cam.combined);
+        dudeBackPlane.render(cam.combined);
+        sunFrontPlane.render(cam.combined);
+        sunBackPlane.render(cam.combined);
         // draw when the depth test fails and ...
         Gdx.gl.glDepthFunc(GL20.GL_GREATER);
         // use the compassPlane alpha=1 in the FB to enable only that region
@@ -293,6 +358,12 @@ public class Sunangle extends ApplicationAdapter {
         clockFrontPlane.render(cam.combined);
         clockBackPlane.render(cam.combined);
         compassBackPlane.render(cam.combined);
+
+        dudeFrontPlane.render(cam.combined);
+        dudeBackPlane.render(cam.combined);
+        //sunFrontPlane.render(cam.combined);
+        //sunBackPlane.render(cam.combined);        compassBackPlane.render(cam.combined);
+
         Gdx.gl.glDisable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_ONE, GL20.GL_ZERO);
         Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
@@ -309,6 +380,8 @@ public class Sunangle extends ApplicationAdapter {
     private void updateWorld() {
         clockFrontPlane.worldTrans.set(clockProjMatrix.cpy());
         clockBackPlane.worldTrans.set(clockProjMatrix.cpy());
+        sunFrontPlane.worldTrans.set(sunMatrix.cpy());
+        sunBackPlane.worldTrans.set(sunMatrix.cpy());
     }
 
     @Override
