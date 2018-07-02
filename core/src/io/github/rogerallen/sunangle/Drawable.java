@@ -33,7 +33,8 @@ class Drawable {
                 vAs);
         vertexBufferObject.setVertices(vertices, 0, vertices.length);
 
-        texture = new Texture(texture_path);
+        texture = new Texture(Gdx.files.internal(texture_path), true);
+        texture.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.Linear);
 
         String vertexShader = Gdx.files.internal(vs_shader_path).readString();
         String fragmentShader = Gdx.files.internal(fs_shader_path).readString();
