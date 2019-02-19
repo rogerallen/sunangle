@@ -150,10 +150,10 @@ public class Sunangle extends ApplicationAdapter {
             float v1 = r1*MathUtils.sin(theta);
 
             vary2[(2*i+0)*9+0] = u0;         vary2[(2*i+0)*9+1] = v0;    vary2[(2*i+0)*9+2] = 0f; // xyz
-            vary2[(2*i+0)*9+3] = 1f;         vary2[(2*i+0)*9+4] = 1f;    vary2[(2*i+0)*9+5] = 0f; vary2[(2*i+0)*9+6] = 1f; // rgba
+            vary2[(2*i+0)*9+3] = 1f;         vary2[(2*i+0)*9+4] = 1f;    vary2[(2*i+0)*9+5] = 0.9f; vary2[(2*i+0)*9+6] = 1f; // rgba
             vary2[(2*i+0)*9+7] = (1f+u0)/2f; vary2[(2*i+0)*9+8] = 1f-(1f+v0)/2f; // st
             vary2[(2*i+1)*9+0] = u1;         vary2[(2*i+1)*9+1] = v1;    vary2[(2*i+1)*9+2] = 0f; // xyz
-            vary2[(2*i+1)*9+3] = 1f;         vary2[(2*i+1)*9+4] = 1f;    vary2[(2*i+1)*9+5] = 0f; vary2[(2*i+1)*9+6] = 1f; // rgba
+            vary2[(2*i+1)*9+3] = 1f;         vary2[(2*i+1)*9+4] = 1f;    vary2[(2*i+1)*9+5] = 0.9f; vary2[(2*i+1)*9+6] = 1f; // rgba
             vary2[(2*i+1)*9+7] = (1f+u1)/2f; vary2[(2*i+1)*9+8] = 1f-(1f+v1)/2f; // st
         }
         clockFrontPlane = new Drawable(
@@ -177,10 +177,10 @@ public class Sunangle extends ApplicationAdapter {
             float v1 = r1*MathUtils.sin(theta);
 
             vary3[(2*i+0)*9+0] = u0;         vary3[(2*i+0)*9+1] = v0;    vary3[(2*i+0)*9+2] = 0f; // xyz
-            vary3[(2*i+0)*9+3] = 1f;         vary3[(2*i+0)*9+4] = 1f;    vary3[(2*i+0)*9+5] = 0f; vary3[(2*i+0)*9+6] = 1f; // rgba
+            vary3[(2*i+0)*9+3] = 1f;         vary3[(2*i+0)*9+4] = 1f;    vary3[(2*i+0)*9+5] = 0.9f; vary3[(2*i+0)*9+6] = 1f; // rgba
             vary3[(2*i+0)*9+7] = 1f-(1f+u0)/2f; vary3[(2*i+0)*9+8] = 1f-(1f+v0)/2f; // st
             vary3[(2*i+1)*9+0] = u1;         vary3[(2*i+1)*9+1] = v1;    vary3[(2*i+1)*9+2] = 0f; // xyz
-            vary3[(2*i+1)*9+3] = 1f;         vary3[(2*i+1)*9+4] = 1f;    vary3[(2*i+1)*9+5] = 0f; vary3[(2*i+1)*9+6] = 1f; // rgba
+            vary3[(2*i+1)*9+3] = 1f;         vary3[(2*i+1)*9+4] = 1f;    vary3[(2*i+1)*9+5] = 0.9f; vary3[(2*i+1)*9+6] = 1f; // rgba
             vary3[(2*i+1)*9+7] = 1f-(1f+u1)/2f; vary3[(2*i+1)*9+8] = 1f-(1f+v1)/2f; // st
         }
         clockBackPlane = new Drawable(

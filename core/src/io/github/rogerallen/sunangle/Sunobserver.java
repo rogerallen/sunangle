@@ -50,7 +50,7 @@ public class Sunobserver {
     private static double julianDay(double year, double month, double day) {
         // Take current YMD & get the Julian Day.  See Formula 7.1
         // year = year, month = month-of-year (1..12), day = day-of-year (1..365)
-        Gdx.app.debug("Sunobserver", "julianDay(" + year + "/" + month + "/" + day + ")");
+        //Gdx.app.debug("Sunobserver", "julianDay(" + year + "/" + month + "/" + day + ")");
         if (month <= 2) {
             year = year - 1;
             month = month + 12;
@@ -82,14 +82,14 @@ public class Sunobserver {
         observer_date = date;
         Calendar time = Calendar.getInstance();
         time.setTime(observer_date);
-        Gdx.app.log("Sunobserver", "time = " + time.getTime());
+        //Gdx.app.log("Sunobserver", "time = " + time.getTime());
         // adjust the time to GMT via negative TimeZone offset
         int offset = -time.getTimeZone().getOffset(time.getTimeInMillis());
         time.add(Calendar.MILLISECOND, offset);
-        Gdx.app.log("Sunobserver", "GMT  = " + time.getTime());
+        //Gdx.app.log("Sunobserver", "GMT  = " + time.getTime());
         // check JD vs http://aa.usno.navy.mil/data/docs/JulianDate.php
         JD = julianDay(time.get(Calendar.YEAR), time.get(Calendar.MONTH) + 1, dayTime(time));
-        Gdx.app.log("Sunobserver", "JD   = " + JD);
+        //Gdx.app.log("Sunobserver", "JD   = " + JD);
         // set the sun alt/az
         updateSunAltAz();
     }
@@ -158,7 +158,7 @@ public class Sunobserver {
                 Math.cos(Math.toRadians(phi)) * Math.cos(Math.toRadians(delta)) * Math.cos(Math.toRadians(H))));
         sun_azimuth = A;
         sun_altitude = h;
-        Gdx.app.log("Sunobserver", "sun az = " + sun_azimuth + " alt = " + sun_altitude);
+        //Gdx.app.log("Sunobserver", "sun az = " + sun_azimuth + " alt = " + sun_altitude);
 
     }
 
